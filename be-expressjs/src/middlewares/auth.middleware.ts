@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { verifyToken } from "../utils/auth"; // Hàm bạn đã viết ở util
+import { verifyToken } from "../utils/auth";
 
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
   try {
