@@ -30,6 +30,14 @@ Sử dụng thông qua `private readonly em: EntityManager` được inject vào
 #### ⚡ Cập nhật trực tiếp (Native Update)
 - `em.nativeUpdate(User, { id: 1 }, { status: 'active' })`: Cập nhật trực tiếp xuống DB mà không cần load Entity lên RAM.
 
+- Lấy danh sách sản phẩm, kèm người tạo và sắp xếp giảm dần theo `created_at`
+```ts
+await em.find(Product, {}, {
+  populate: ['createdBy'],
+  orderBy: { created_at: 'DESC' },
+});
+```
+
 ---
 
 ### 💡 3. Quy trình Persist & Flush

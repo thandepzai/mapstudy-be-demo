@@ -3,26 +3,27 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import { EntityManager } from '@mikro-orm/postgresql';
+import { EntityManager, wrap } from '@mikro-orm/postgresql';
 import { Product } from './entities/product.entity';
 import { User } from '../users/entities/user.entity';
 import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
   constructor(private readonly em: EntityManager) {}
 
-  // 1. Thêm sản phẩm: Gắn user từ token vào createdBy
   async create(dto: CreateProductDto, user: User) {
     const product = this.em.create(Product, {
       ...dto,
       createdBy: user,
     });
-    await this.em.persistAndFlush(product);
+
+    this.em.persist(product);
+    await this.em.flush();
     return product;
   }
 
-  // 2. Lấy danh sách: Dùng populate để lấy thêm thông tin người đăng (Phần 3: Populate)
   async findAll() {
     return this.em.find(
       Product,
@@ -34,7 +35,10 @@ export class ProductsService {
     );
   }
 
-  // 3. Xóa sản phẩm: Kiểm tra xem có đúng là chủ sở hữu không
+  async findOne(id: number) {
+    return this.em.findOne(Product, { id }, { populate: ['createdBy'] });
+  }
+
   async remove(id: number, user: User) {
     const product = await this.em.findOne(
       Product,
@@ -44,12 +48,24 @@ export class ProductsService {
 
     if (!product) throw new NotFoundException('Không tìm thấy sản phẩm');
 
-    // Kiểm tra quyền: ID người đăng phải khớp với ID người dùng hiện tại
     if (product.createdBy.id !== user.id) {
       throw new ForbiddenException('Bạn không có quyền xóa sản phẩm này');
     }
 
-    await this.em.removeAndFlush(product);
+    this.em.remove(product);
+    await this.em.flush();
     return { message: 'Xóa thành công' };
+  }
+
+  async update(id: number, dto: UpdateProductDto, user: User) {
+    const product = await this.findOne(id);
+
+    if (product.createdBy.id !== user.id) {
+      throw new ForbiddenException('Bạn không có quyền sửa sản phẩm này');
+    }
+
+    wrap(product).assign(dto);
+    await this.em.flush();
+    return product;
   }
 }

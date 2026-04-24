@@ -15,11 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: { userId: number; username: string }) {
-    const user = await this.em.findOne(
-      User,
-      { id: payload.userId },
-      { fields: ['id', 'username'] },
-    );
+    const user = await this.em.findOne(User, { id: payload.userId });
     if (!user) {
       throw new UnauthorizedException('Không tìm thấy người dùng này!');
     }

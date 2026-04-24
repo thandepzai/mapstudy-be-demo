@@ -11,3 +11,10 @@ cd be-expressjs
 npm install
 npm run dev
 ```
+
+### Cách chạy dự án NestJS + MikroORM:
+```bash
+cd be-nestjs-mikroorm
+npm install
+npm run dev
+```
