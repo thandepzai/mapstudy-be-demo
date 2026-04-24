@@ -74,7 +74,6 @@ export class AuthService {
 
     const tokens = await this.getTokens(user.id, user.username);
 
-    // Lưu refresh token vào DB
     user.refresh_token = tokens.refreshToken;
     await this.em.flush();
 
